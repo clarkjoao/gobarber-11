@@ -3,9 +3,10 @@ import React, { useCallback, useRef } from 'react';
 import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
-import { Container, Content, Background } from './styles';
+import { Container, Content, AnimatedContainer, Background } from './styles';
 import { useAuth } from '../../hooks/auth';
 import { useToast } from '../../hooks/toast';
+import { Link, useHistory } from 'react-router-dom';
 import * as Yup from 'yup';
 import getValidationsErrors from '../../utils/getValidationsErrors';
 import Input from '../../components/Input';
@@ -21,6 +22,7 @@ const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const { user, signIn } = useAuth();
   const { addToast } = useToast();
+  const history = useHistory();
   const handlerSubmit = useCallback(
     async (data: SignInFormData) => {
       try {
@@ -34,45 +36,48 @@ const SignIn: React.FC = () => {
 
         await schema.validate(data, { abortEarly: false });
         await signIn({ email: data.email, password: data.password });
+        history.push('/deashboard');
       } catch (err) {
         if (err as Yup.ValidateOptions) {
           const erros = getValidationsErrors(err);
-          formRef.current?.setErrors(erros);
+          return formRef.current?.setErrors(erros);
         }
 
         addToast({
           title: 'Erro na autenticação',
           type: 'error',
-          description: 'ocorreu um erro ao fazer login, chueque as credenciais',
+          description: 'ocorreu um erro ao fazer login, cheque as credenciais',
         });
       }
     },
-    [signIn],
+    [signIn, addToast, history],
   );
   return (
     <Container>
       <Content>
-        <img src={LogoImg} alt="GoBarber" />
-        <Form ref={formRef} onSubmit={handlerSubmit}>
-          <h1>Faça seu logon</h1>
+        <AnimatedContainer>
+          <img src={LogoImg} alt="GoBarber" />
+          <Form ref={formRef} onSubmit={handlerSubmit}>
+            <h1>Faça seu logon</h1>
 
-          <Input name="email" icon={FiMail} placeholder="E-mail" />
-          <Input
-            name="password"
-            icon={FiLock}
-            type="password"
-            placeholder="Senha"
-          />
+            <Input name="email" icon={FiMail} placeholder="E-mail" />
+            <Input
+              name="password"
+              icon={FiLock}
+              type="password"
+              placeholder="Senha"
+            />
 
-          <Button type="submit">Entrar</Button>
+            <Button type="submit">Entrar</Button>
 
-          <a>Esqueci Minha Senha</a>
-        </Form>
+            <a>Esqueci Minha Senha</a>
+          </Form>
 
-        <a>
-          <FiLogIn />
-          Criar Conta
-        </a>
+          <Link to="/signup">
+            <FiLogIn />
+            Criar Conta
+          </Link>
+        </AnimatedContainer>
       </Content>
       <Background />
     </Container>
