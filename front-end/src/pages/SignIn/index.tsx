@@ -4,7 +4,8 @@ import { FiLogIn, FiMail, FiLock } from 'react-icons/fi';
 import { Form } from '@unform/web';
 import { FormHandles } from '@unform/core';
 import { Container, Content, Background } from './styles';
-import { useAuth } from '../../hooks/AuthContext';
+import { useAuth } from '../../hooks/auth';
+import { useToast } from '../../hooks/toast';
 import * as Yup from 'yup';
 import getValidationsErrors from '../../utils/getValidationsErrors';
 import Input from '../../components/Input';
@@ -19,7 +20,7 @@ interface SignInFormData {
 const SignIn: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const { user, signIn } = useAuth();
-  console.log(user);
+  const { addToast } = useToast();
   const handlerSubmit = useCallback(
     async (data: SignInFormData) => {
       try {
@@ -32,12 +33,18 @@ const SignIn: React.FC = () => {
         });
 
         await schema.validate(data, { abortEarly: false });
-        signIn({ email: data.email, password: data.password });
+        await signIn({ email: data.email, password: data.password });
       } catch (err) {
         if (err as Yup.ValidateOptions) {
           const erros = getValidationsErrors(err);
           formRef.current?.setErrors(erros);
         }
+
+        addToast({
+          title: 'Erro na autenticação',
+          type: 'error',
+          description: 'ocorreu um erro ao fazer login, chueque as credenciais',
+        });
       }
     },
     [signIn],
