@@ -12,6 +12,7 @@ import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 import { useNavigation } from '@react-navigation/native';
 import * as Yup from 'yup';
+import { useAuth } from '../../hooks/auth';
 import getValidationsErrors from '../../utils/getValidationsErrors';
 import Icon from 'react-native-vector-icons/Feather';
 import Input from '../../components/Input';
@@ -36,6 +37,7 @@ const SignIn: React.FC = () => {
   const navigation = useNavigation();
   const formRef = useRef<FormHandles>(null);
   const passwordRef = useRef<TextInput>(null);
+  const { signIn } = useAuth();
 
   const handlerSignIn = useCallback(async (data: SignInFormData) => {
     try {
@@ -48,7 +50,7 @@ const SignIn: React.FC = () => {
       });
 
       await schema.validate(data, { abortEarly: false });
-      // await signIn({ email: data.email, password: data.password });
+      await signIn({ email: data.email, password: data.password });
     } catch (err) {
       if (err as Yup.ValidateOptions) {
         const erros = getValidationsErrors(err);

@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
+import api from '../../services/api';
 import getValidationsErrors from '../../utils/getValidationsErrors';
 import Icon from 'react-native-vector-icons/Feather';
 import Input from '../../components/Input';
@@ -25,42 +26,53 @@ import {
   BackToSignInButtonText,
 } from './styles';
 
+interface SingUpFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
 const SignUp: React.FC = () => {
   const navigation = useNavigation();
   const formRef = useRef<FormHandles>(null);
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
 
-  const handlerSignUp = useCallback(async (data: SingUpFormData) => {
-    try {
-      formRef.current?.setErrors({});
-      const schema = Yup.object().shape({
-        name: Yup.string().required('Nome obrigatório'),
-        email: Yup.string()
-          .email('Digite um e-mail válido')
-          .required('Email obrigatório'),
-        password: Yup.string().min(6, 'No mínimo 6 digitos'),
-      });
+  const handlerSignUp = useCallback(
+    async (data: SingUpFormData) => {
+      try {
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          name: Yup.string().required('Nome obrigatório'),
+          email: Yup.string()
+            .email('Digite um e-mail válido')
+            .required('Email obrigatório'),
+          password: Yup.string().min(6, 'No mínimo 6 digitos'),
+        });
 
-      await schema.validate(data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false });
 
-      // await api.post('/users', data);
-      // Alert.alert(
-      //   'Cadastro Realizado',
-      //   'Voçê já pode fazer logon no GoBarber!',
-      // );
-    } catch (err) {
-      if (err as Yup.ValidateOptions) {
-        const erros = getValidationsErrors(err);
-        return formRef.current?.setErrors(erros);
+        await api.post('/users', data);
+        Alert.alert(
+          'Cadastro Realizado',
+          'Voçê já pode fazer logon no GoBarber!',
+        );
+
+        navigation.goBack();
+      } catch (err) {
+        if (err as Yup.ValidateOptions) {
+          const erros = getValidationsErrors(err);
+          return formRef.current?.setErrors(erros);
+        }
+
+        Alert.alert(
+          'Erro no cadastro',
+          'ocorreu um erro ao fazer cadastro, tente novamente.',
+        );
       }
-
-      Alert.alert(
-        'Erro no cadastro',
-        'ocorreu um erro ao fazer cadastro, tente novamente.',
-      );
-    }
-  }, []);
+    },
+    [navigation],
+  );
   return (
     <>
       <KeyboardAvoidingView
@@ -126,7 +138,7 @@ const SignUp: React.FC = () => {
       </KeyboardAvoidingView>
       <BackToSignInButton
         onPress={() => {
-          navigation.navigate('SignIn');
+          navigation.goBack();
         }}
       >
         <Icon name="arrow-left" size={20} color="#fff" />
