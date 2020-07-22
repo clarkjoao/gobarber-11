@@ -1,7 +1,7 @@
-import Users from '../models/Users';
+import Users from '@modules/users/infra/typeorm/entities/Users';
 import { hash } from 'bcryptjs';
 import { getRepository } from 'typeorm';
-import AppErros from '../errors/AppErros';
+import AppErros from '@shared/errors/AppErros';
 interface Request {
     name: string;
 
