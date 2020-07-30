@@ -1,8 +1,5 @@
-import path from 'path';
-import fs from 'fs';
 import AppErros from '@shared/errors/AppErros';
 import User from '@modules/users/infra/typeorm/entities/Users';
-import uploadConfig from '@config/upload';
 import IUsersRepository from '../repositories/IUsersRepository';
 import { injectable, inject } from 'tsyringe';
 import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
@@ -22,7 +19,7 @@ class UpdateUserAvatarService {
     ) {}
     public async execute({ user_id, avatarFilename }: IRequest): Promise<User> {
         const user = await this.usersRepository.findById(user_id);
-
+        console.log(user);
         if (!user) {
             throw new AppErros(
                 `Only authenticated users can change avatar.`,
@@ -30,10 +27,10 @@ class UpdateUserAvatarService {
             );
         }
 
-        if (user.avatar) {
+        if (user?.avatar) {
             await this.storageProvider.deleteFile(user.avatar);
         }
-        const fileName = await this.storageProvider.saveFile(user.avatar);
+        const fileName = await this.storageProvider.saveFile(avatarFilename);
 
         user.avatar = fileName;
 
